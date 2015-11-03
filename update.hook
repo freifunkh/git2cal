@@ -1,0 +1,67 @@
+#!/bin/sh
+
+# INSTRUCTIONS:
+#
+# To install this file: copy it as <git repo>/.git/hooks/update into
+# your repository. Before the revision of a branch is set to the new
+# commit, every changed file since the actual revision of the branch
+# will be checked by running the $CHECK_COMMAND and piping the files
+# new content in that process. If the process was successful (exit
+# code == 0), the file will be accepted. 
+
+CHECK_COMMAND="false"
+
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+# --- Safety check
+if [ -z "$GIT_DIR" ]; then
+	echo "Don't run this script from the command line." >&2
+	echo " (if you want, you could supply GIT_DIR then run" >&2
+	echo "  $0 <ref> <oldrev> <newrev>)" >&2
+	exit 1
+fi
+
+if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
+	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
+	exit 1
+fi
+
+# --- Check types
+zero="0000000000000000000000000000000000000000"
+if [ "$newrev" = "$zero" ]; then
+	newrev_type=delete
+else
+	newrev_type=$(git cat-file -t $newrev)
+fi
+
+#echo "refname: $refname"
+#echo "oldrev: $oldrev"
+#echo "newrev: $newrev"
+#echo "newrev_type: $newrev_type"
+
+files="$(git diff-tree --no-commit-id --name-only -r $newrev $refname | tr "\n" " ")"
+echo "Affected files: $files"
+
+case "$refname","$newrev_type" in
+	refs/heads/*,commit)
+		state=ok
+		for f in $files; do
+
+			if ! git cat-file --textconv $newrev:$f | $CHECK_COMMAND; then
+				state=failed
+				echo "File $f is corrupted."
+			fi
+		done;
+		if [ "$state" == "failed" ]; then
+			exit 1
+		fi;
+		echo "success! :)"
+		;;
+	*)
+		;;
+esac
+
+exit 0
