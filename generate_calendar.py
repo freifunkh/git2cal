@@ -97,7 +97,7 @@ def GenerateCalendar( inputPath, outputFilePath ):
                 ical_file.write( ical_content )
 
         return 0
-    except KeyboardInterrupt:
+    except:
         return 2
 
 
