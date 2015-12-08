@@ -40,10 +40,10 @@ def CheckInput( inputPath ):
     if inputPath:
         for csv in ListCSVs( inputPath ):
             try:
-                with open( filePath, 'r' ) as csv_file:
+                with open( csv, 'r' ) as csv_file:
                     CheckFileFormat( csv_file )
             except:
-                print( "Invalid file: " + filePath, file=sys.stderr )
+                print( "Invalid file: " + csv, file=sys.stderr )
                 return 1
     else:
         try:
@@ -130,7 +130,7 @@ def GenerateCalendar( inputPath, outputFilePath ):
                 print( ical_content_old )
 
         return 0
-    except KeyboardInterrupt:
+    except:
         return 2
 
 

@@ -10,18 +10,6 @@ class Event:
         self.dtstart = datetime.strptime( dtstart, "%Y-%m-%d-%H-%M" )
         self.dtend = dtend
 
-    def SetLocation( self, location ):
-        self.location = location
-
-    def SetSummary( self, summary ):
-        self.summary = summary
-
-    def SetDescription( self, description ):
-        self.description = description
-
-    def SetDTStart( self, dtstart ):
-        self.dtstart = dtstart
-
     def ToICal( self ):
         ret  = "BEGIN:VEVENT\r\n"
         ret += "SUMMARY:" + self.summary + "\r\n"
@@ -29,7 +17,7 @@ class Event:
         if self.dtstart:
             ret += "DTSTART;VALUE=DATE-TIME:" + self.dtstart.strftime( "%Y%m%dT%H%M%S" ) + "\r\n"
         else:
-            ret += "DTSTART:00000000T000000Z\r\n"
+            ret += "DTSTART;VALUE=DATE-TIME:00000000T000000\r\n"
 
         ret += "LOCATION:" + self.location + "\r\n"
         ret += "END:VEVENT\r\n"
