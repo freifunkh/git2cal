@@ -30,10 +30,14 @@ class Calendar:
     def __init__( self ):
         self.eventList = []
 
+    def _Sort( self ):
+        self.eventList.sort( key=lambda e: e.dtstart.isoformat() )
+
     def AddEvent( self, event ):
         self.eventList.append( event )
 
     def ToICal( self ):
+        self._Sort()
         ret  = "BEGIN:VCALENDAR\r\n"
 
         for event in self.eventList:
@@ -43,4 +47,5 @@ class Calendar:
         return ret
 
     def ToDict( self ):
+        self._Sort()
         return [ e.ToDict() for e in self.eventList ]
