@@ -1,14 +1,13 @@
 #!/usr/bin/python3
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 class Event:
-    def __init__( self, location="", summary="", description="", dtstart=None, dtend=None ):
+    def __init__( self, location="", summary="", description="", dtstart=None ):
         self.location = location
         self.summary = summary
         self.description = description
-        self.dtstart = datetime.strptime( dtstart, "%Y-%m-%d-%H-%M" )
-        self.dtend = dtend
+        self.dtstart = dtstart
 
     def ToICal( self ):
         ret  = "BEGIN:VEVENT\r\n"
@@ -22,6 +21,9 @@ class Event:
         ret += "LOCATION:" + self.location + "\r\n"
         ret += "END:VEVENT\r\n"
         return ret
+
+    def ToDict( self ):
+        return { "location": self.location, "summary": self.summary, "description": self.description, "dtstart": self.dtstart.strftime("%Y-%m-%dT%H:%M:%S%z") }
 
 
 class Calendar:    
@@ -39,3 +41,6 @@ class Calendar:
 
         ret += "END:VCALENDAR\r\n"
         return ret
+
+    def ToDict( self ):
+        return [ e.ToDict() for e in self.eventList ]
