@@ -11,6 +11,9 @@ import json
 import kalle
 from TzEuropeBerlin import TzEuropeBerlin
 
+ignore_border_days = 60 # Don't write past events into the calendar.
+
+
 def ListCSVs( inputPath ):
     '''Yield helper that returns every *.csv file in the given folder.'''
     if os.path.isdir( inputPath ):
@@ -51,8 +54,13 @@ def CheckInput( inputPath ):
 
 
 def GenerateEventFromRow( row ):
-    '''Gets a three-element-array and generates an event. Returns the event or throws on error.'''
+    '''Gets a three-element-array and generates an event. Returns the event or None, if the event's date is
+    far into the past (see ignore_border_days). Throws on error.'''
+    global ignore_border_days
     dt = datetime.strptime( row[2], "%Y-%m-%d-%H-%M" )
+    now = datetime.now()
+    if dt < now - timedelta( days=ignore_border_days ):
+        return None
     return kalle.Event( row[1], row[0], dtstart=dt )
 
 

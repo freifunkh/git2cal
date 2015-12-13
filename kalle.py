@@ -34,7 +34,10 @@ class Calendar:
         self.eventList.sort( key=lambda e: e.dtstart.isoformat() )
 
     def AddEvent( self, event ):
-        self.eventList.append( event )
+        if event:
+            self.eventList.append( event )
+            return True
+        return False
 
     def ToICal( self ):
         self._Sort()
