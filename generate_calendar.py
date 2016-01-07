@@ -11,7 +11,7 @@ import json
 import kalle
 from TzEuropeBerlin import TzEuropeBerlin
 
-ignore_border_days = 60 # Don't write past events into the calendar.
+ignore_border_days = 14 # Don't write past events into the calendar.
 
 
 def ListCSVs( inputPath ):
