@@ -80,7 +80,7 @@ def CalendarDictToJSON( calDict ):
         z = dt.strftime( "%z" )
         line["date"] = dt.strftime( "%Y-%m-%dT%H:%M:%S" ) + z[:3] + ':' + z[3:]
 
-        line["url"] = "http://hannover.freifunk.net/wiki/Treffen#" + line["location"].replace( ' ', '_' )
+        line["url"] = "https://hannover.freifunk.net/wiki/Freifunk/Treffen#" + line["location"].replace( ' ', '_' )
         line["label"] = line["location"]
 
         delete_list = []
