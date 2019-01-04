@@ -92,7 +92,10 @@ def calendar_to_json(cal):
         line["label"] = e.location
         line["url"] = "https://hannover.freifunk.net/wiki/Freifunk/Treffen#{}".format(e.location.replace(' ', '_'))
 
-        utc_dt = datetime.fromisoformat(str(e.begin))
+        dt_str = str(e.begin)
+        # remove one colon
+        dt_str = "{}{}".format(dt_str[0:22], dt_str[23:])
+        utc_dt = datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S%z")
         # TODO: Handle time zones properly
         timezone = pytz.timezone("Europe/Berlin")
         local_dt = utc_dt.astimezone(timezone)
