@@ -80,26 +80,30 @@ def generate_events_from_file(csv_file, output_cal):
         output_cal.events.add(generate_event_from_row(row))
 
 
-def calender_dict_to_json(cal_dict):
-    '''Generates a JSON file in the same format as our old PHP script. Not pretty but it works.'''
-    for line in cal_dict:
-        dt = datetime.strptime(line["dtstart"], "%Y-%m-%dT%H:%M:%S")
-        dt = dt.replace(tzinfo=TzEuropeBerlin())
-        z = dt.strftime("%z")
-        line["date"] = dt.strftime("%Y-%m-%dT%H:%M:%S") + z[:3] + ':' + z[3:]
+def calendar_to_json(cal):
+    '''Generates a JSON string in the same format as our old PHP script. Not pretty but it works.'''
+    event_list = []
+    c = 0
+    for e in sorted(cal.events, key=lambda x: str(x.begin), reverse=True):
+        c += 1
+        if c > 8:
+            break
+        line = dict()
+        line["label"] = e.location
+        line["url"] = "https://hannover.freifunk.net/wiki/Freifunk/Treffen#{}".format(e.location.replace(' ', '_'))
 
-        line["url"] = "https://hannover.freifunk.net/wiki/Freifunk/Treffen#" + \
-            line["location"].replace(' ', '_')
-        line["label"] = line["location"]
-
-        delete_list = []
-        for key in line:
-            if key not in ["date", "label", "url"]:
-                delete_list.append(key)
-        for key in delete_list:
-            del line[key]
-
-    return json.dumps(cal_dict)
+        utc_dt = datetime.fromisoformat(str(e.begin))
+        # TODO: Handle time zones properly
+        timezone = pytz.timezone("Europe/Berlin")
+        local_dt = utc_dt.astimezone(timezone)
+        offset = local_dt.strftime("%z")
+        if len(offset) == 5:
+            offset = "{}:{}".format(offset[0:3], offset[3:])
+        else:
+            offset = ""
+        line["date"] = "{}{}".format(local_dt.strftime("%Y-%m-%dT%H:%M:00"), offset)
+        event_list.append(line)
+    return json.dumps(event_list)
 
 
 def generate_calendar(input_path, output_file_path, output_format):
@@ -122,7 +126,7 @@ def generate_calendar(input_path, output_file_path, output_format):
         if output_format == "ics":
             content = str(cal)
         elif output_format == "json":
-            content = calender_dict_to_json(cal.to_dict())
+            content = calendar_to_json(cal)
         else:
             raise ValueError
 
