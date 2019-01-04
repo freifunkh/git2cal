@@ -1,17 +1,15 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import argparse
 import csv
 from datetime import datetime, timezone, timedelta
 import os
 import os.path
+import pytz
 import sys
 import re
 import json
-import kalle
-from TzEuropeBerlin import TzEuropeBerlin
-
-ignore_border_days = 14  # Don't write past events into the calendar.
+import ics
 
 
 def list_csv_files(input_path):
@@ -54,14 +52,24 @@ def check_input(input_path):
 
 
 def generate_event_from_row(row):
-    '''Gets a three-element-array and generates an event. Returns the event or None, if the event's date is
-    far into the past (see ignore_border_days). Throws on error.'''
-    global ignore_border_days
-    dt = datetime.strptime(row[2], "%Y-%m-%d-%H-%M")
-    now = datetime.now()
-    if dt < now - timedelta(days=ignore_border_days):
-        return None
-    return kalle.Event(row[1], row[0], dtstart=dt)
+    '''Gets a three-element-array and generates an event. Returns the event. Throws on error.'''
+    # TODO: Handle time zones properly
+    naive_dt = datetime.strptime(row[2], "%Y-%m-%d-%H-%M")
+    timezone = pytz.timezone("Europe/Berlin")
+    local_dt = timezone.localize(naive_dt, is_dst=None)
+    utc_dt = local_dt.astimezone(pytz.utc)
+    e = ics.event.Event()
+    e.name = row[0]
+    e.begin = utc_dt.strftime("%Y%m%dT%H%MZ")
+    # TODO: Make duration configurable
+    e.duration = timedelta(hours=3)
+    e.location = row[1]
+    # TODO: Make URL configurable
+    e.url = "https://leinelab.org/doku.php/raum:anfahrt"
+    e.uid = utc_dt.strftime("event%Y%m%d")
+    # TODO: Make description configurable
+    e.description = "Freifunk-Treffen im LeineLab. Anfahrt: https://leinelab.org/doku.php/raum:anfahrt"
+    return e
 
 
 def generate_events_from_file(csv_file, output_cal):
@@ -69,7 +77,7 @@ def generate_events_from_file(csv_file, output_cal):
     Throws merciless in case of errors.'''
     csv_content = csv.reader(csv_file, delimiter=';')
     for row in csv_content:
-        output_cal.add_event(generate_event_from_row(row))
+        output_cal.events.add(generate_event_from_row(row))
 
 
 def calender_dict_to_json(cal_dict):
@@ -101,7 +109,7 @@ def generate_calendar(input_path, output_file_path, output_format):
     Returns 2 in case of errors, otherwise 0.'''
 
     try:
-        cal = kalle.Calendar()
+        cal = ics.icalendar.Calendar()
 
         if input_path:
             for csv in list_csv_files(input_path):
@@ -112,7 +120,7 @@ def generate_calendar(input_path, output_file_path, output_format):
 
         content = ""
         if output_format == "ics":
-            content = cal.to_ical()
+            content = str(cal)
         elif output_format == "json":
             content = calender_dict_to_json(cal.to_dict())
         else:
