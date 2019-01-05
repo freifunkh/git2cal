@@ -90,7 +90,8 @@ def calendar_to_json(cal):
             break
         line = dict()
         line["label"] = e.location
-        line["url"] = "https://hannover.freifunk.net/wiki/Freifunk/Treffen#{}".format(e.location.replace(' ', '_'))
+        # TODO: Make configurable
+        line["url"] = "https://hannover.freifunk.net/wiki/Freifunk/Treffen"
 
         dt_str = str(e.begin)
         # remove one colon
