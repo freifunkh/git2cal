@@ -61,7 +61,7 @@ def generate_event_from_row(row):
     utc_dt = local_dt.astimezone(pytz.utc)
     e = ics.event.Event()
     e.name = row[0]
-    e.begin = utc_dt.strftime("%Y%m%dT%H%MZ")
+    e.begin = utc_dt.strftime("%Y-%m-%dT%H:%MZ")
     # TODO: Make duration configurable
     e.duration = timedelta(hours=3)
     e.location = row[1]
