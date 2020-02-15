@@ -2,7 +2,7 @@
 
 import argparse
 import csv
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 import os
 import os.path
 import pytz
@@ -33,15 +33,16 @@ def check_file_format(file_path):
 
 
 def check_input(input_path):
-    '''Checks the syntax of an *.csv file. If a folder is given, it checks all *.csv files in that folder.
+    '''Checks the syntax of an *.csv file.
+    If a folder is given, it checks all *.csv files in that folder.
     Returns 1 in case of errors, otherwise 0.'''
     if input_path:
-        for csv in list_csv_files(input_path):
+        for line in list_csv_files(input_path):
             try:
-                with open(csv, 'r') as csv_file:
+                with open(line, 'r') as csv_file:
                     check_file_format(csv_file)
             except:
-                print("Invalid file: " + csv, file=sys.stderr)
+                print("Invalid file: " + line, file=sys.stderr)
                 return 1
     else:
         try:
@@ -68,7 +69,8 @@ def generate_event_from_row(row):
     e.url = "https://leinelab.org/doku.php/raum:anfahrt"
     e.uid = utc_dt.strftime("event%Y%m%d")
     # TODO: Make description configurable
-    e.description = "Freifunk-Treffen im LeineLab. Anfahrt: https://leinelab.org/doku.php/raum:anfahrt"
+    e.description = "Freifunk-Treffen im LeineLab. "\
+                    "Anfahrt: https://leinelab.org/doku.php/raum:anfahrt"
     return e
 
 
@@ -112,16 +114,18 @@ def calendar_to_json(cal):
 
 def generate_calendar(input_path, output_file_path, output_format):
     '''Reads the input file and generates an "ical" calendar.
-    If input_path is a folder this function will read all *.csv files from that folder. Current folder is the default.
-    If output_file_path is empty, output will be written to stdout. Otherwise it will be written to file.
+    If input_path is a folder this function will read all *.csv files from that folder.
+    Current folder is the default.
+    If output_file_path is empty, output will be written to stdout.
+    Otherwise it will be written to file.
     Returns 2 in case of errors, otherwise 0.'''
 
     try:
         cal = ics.icalendar.Calendar()
 
         if input_path:
-            for csv in list_csv_files(input_path):
-                with open(csv, 'r') as csv_file:
+            for line in list_csv_files(input_path):
+                with open(line, 'r') as csv_file:
                     generate_events_from_file(csv_file, cal)
         else:
             generate_events_from_file(sys.stdin, cal)
@@ -150,11 +154,11 @@ if __name__ == "__main__":
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
-        "-c", "--check",  help="check the syntax (and write nothing)", action="store_true")
+        "-c", "--check", help="check the syntax (and write nothing)", action="store_true")
     group.add_argument("-f", "--format", help="the output format",
                        choices=["ics", "json"], default="ics")
     parser.add_argument(
-        "-i", "--input",  help="file or folder to read (default: current folder)")
+        "-i", "--input", help="file or folder to read (default: current folder)")
     parser.add_argument(
         "-o", "--output", help="file to write (default: stdout)", default='')
 
