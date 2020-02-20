@@ -85,11 +85,7 @@ def generate_events_from_file(csv_file, output_cal):
 def calendar_to_json(cal):
     '''Generates a JSON string in the same format as our old PHP script. Not pretty but it works.'''
     event_list = []
-    c = 0
     for e in sorted(cal.events, key=lambda x: str(x.begin), reverse=True):
-        c += 1
-        if c > 8:
-            break
         line = dict()
         line["label"] = e.location
         # TODO: Make configurable
